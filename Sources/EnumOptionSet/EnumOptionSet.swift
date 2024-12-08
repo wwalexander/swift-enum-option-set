@@ -22,13 +22,7 @@ extension EnumOptionSet where RawValue: FixedWidthInteger {
     }
 }
 
-extension EnumOptionSet where Self: CaseIterable, Option: CaseIterable {
-    public static var allCases: [Self] {
-        Option.allCases.map(Self.init)
-    }
-}
-
-extension EnumOptionSet where Self: CaseIterable, Option: CaseIterable, RawValue: Equatable {
+extension EnumOptionSet where Option: CaseIterable, RawValue: Equatable {
     public var options: [Option] {
         .init(Option.allCases.filter { option in option.rawValue == self.rawValue })
     }
