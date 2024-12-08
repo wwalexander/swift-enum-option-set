@@ -1,13 +1,13 @@
-protocol EnumOptionSet: OptionSet {
+public protocol EnumOptionSet: OptionSet {
     associatedtype Option: RawRepresentable<RawValue>
 }
 
 extension EnumOptionSet {
-    init(_ option: Option) {
+    public init(_ option: Option) {
         self.init(rawValue: option.rawValue)
     }
 
-    init(_ options: some Sequence<Option>) {
+    public init(_ options: some Sequence<Option>) {
         self = []
 
         for option in options {
@@ -17,19 +17,19 @@ extension EnumOptionSet {
 }
 
 extension EnumOptionSet where RawValue: FixedWidthInteger {
-    var count: Int {
+    public var count: Int {
         rawValue.nonzeroBitCount
     }
 }
 
 extension EnumOptionSet where Self: CaseIterable, Option: CaseIterable {
-    static var allCases: [Self] {
+    public static var allCases: [Self] {
         Option.allCases.map(Self.init)
     }
 }
 
 extension EnumOptionSet where Self: CaseIterable, Option: CaseIterable, RawValue: Equatable {
-    var options: [Option] {
+    public var options: [Option] {
         .init(Option.allCases.filter { option in option.rawValue == self.rawValue })
     }
 }
