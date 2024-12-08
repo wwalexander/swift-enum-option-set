@@ -17,11 +17,21 @@ public struct OptionSetMacro: MemberMacro, ExtensionMacro {
             .members
             .lazy
             .compactMap { member in member.decl.as(EnumDeclSyntax.self) }
-            .first { enumDecl in enumDecl.name.text == "Option" }!
+            .first { enumDecl in enumDecl.name.text == "Option" }
 
-        let rawType = enumDecl.inheritanceClause?.inheritedTypes.lazy.map(\.type).first!
+        guard let enumDecl else {
+            context.diagnose(.init(node: structDecl, message: OptionSetMacroDiagnostic.requiresOptionEnum))
+            return []
+        }
 
-        return ["let rawValue: \(rawType)"] + enumDecl
+        guard let rawType = enumDecl.inheritanceClause?.inheritedTypes.lazy.map(\.type).first else {
+            context.diagnose(.init(node: enumDecl, message: OptionSetMacroDiagnostic.requiresOptionEnumRawType))
+            return []
+        }
+        
+        let rawValueDecl = "let rawValue: \(rawType)" as DeclSyntax
+
+        return [rawValueDecl] + enumDecl
             .memberBlock
             .members
             .lazy
@@ -48,6 +58,23 @@ public struct OptionSetMacro: MemberMacro, ExtensionMacro {
             )
         ]
     }
+}
+
+enum OptionSetMacroDiagnostic: DiagnosticMessage {
+    case requiresStruct
+    case requiresOptionEnum
+    case requiresOptionEnumRawType
+
+    var message: String {
+        switch self {
+        case .requiresStruct: "OptionSet macro can only be applied to a struct"
+        case .requiresOptionEnum: "OptionSet macro requires nested enum Option"
+        case .requiresOptionEnumRawType: "OptionSet macro requires a raw type"
+        }
+    }
+
+    var severity: DiagnosticSeverity { .error }
+    var diagnosticID: MessageID { .init(domain: "Swift", id: "OptionSet.\(self)")  }
 }
 
 @main
